@@ -4,234 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Airbnb Stay Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <style>
-        * {
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body, html {
             height: 100%;
-            background-color: #f7f7f7;
-        }
-        
-        .chat-container {
+            font-family: 'Arial', sans-serif;
             display: flex;
-            flex-direction: column;
-            height: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
         }
-        
-        .chat-header {
-            background-color: #FF5A5F;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
+
+        #chat-container {
+            width: 100%;
+            max-width: 600px; /* Wider for a chatbot feel */
+            height: 90vh; /* Almost full height */
+            border: none; /* Remove border for cleaner look */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            border-radius: 12px; /* Rounded corners */
+            overflow: hidden; /* Prevent content overflow */
+            background-color: #ffffff; /* White background for chat */
         }
-        
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
+
+        /* Ensure the chat takes full space */
+        .n8n-chat-window {
+            height: 100% !important;
+            width: 100% !important;
         }
-        
-        .message {
-            max-width: 80%;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 18px;
-            word-wrap: break-word;
-        }
-        
-        .bot-message {
-            background-color: #f0f0f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-        }
-        
-        .user-message {
-            background-color: #FF5A5F;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .chat-input-container {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #e0e0e0;
-            background-color: white;
-        }
-        
-        #chat-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-            font-size: 16px;
-        }
-        
-        #send-button {
-            background-color: #FF5A5F;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 20px;
-            margin-left: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        
-        #send-button:hover {
-            background-color: #ff4246;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 50px;
-            text-align: left;
-        }
-        
-        .loading:after {
-            content: '.';
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-        
-        @keyframes dots {
-            0%, 20% {
-                color: rgba(0,0,0,0);
-                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
-            }
-            40% {
-                color: #666;
-                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
-            }
-            60% {
-                text-shadow: .25em 0 0 #666, .5em 0 0 rgba(0,0,0,0);
-            }
-            80%, 100% {
-                text-shadow: .25em 0 0 #666, .5em 0 0 #666;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .chat-container {
-                max-width: 100%;
-                height: 100%;
-            }
+
+        /* Hide the launcher button if it exists */
+        .n8n-chat-launcher {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            Airbnb Stay Assistant
-        </div>
-        <div class="messages-container" id="messages-container">
-            <div class="message bot-message">
-                Welcome to your Airbnb stay! I'm your virtual assistant here to help with any questions about the property or your stay. What can I help you with today?
-            </div>
-        </div>
-        <div class="chat-input-container">
-            <input type="text" id="chat-input" placeholder="Type your question here..." autocomplete="off">
-            <button id="send-button">Send</button>
-        </div>
-    </div>
+    <div id="chat-container"></div>
 
-    <script>
-        // DOM Elements
-        const messagesContainer = document.getElementById('messages-container');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
-        
-        // Mock API endpoint (replace with your actual n8n webhook URL)
-        const API_ENDPOINT = "https://automation.guitarjkp.me/webhook/33256a88-dc76-4f8a-bfb8-a117fe433f8a/chat";
-        
-        // Add event listeners
-        sendButton.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        createChat({
+            webhookUrl: 'https://automation.guitarjkp.me/webhook/33256a88-dc76-4f8a-bfb8-a117fe433f8a/chat',
+            title: 'Airbnb Stay Assistant',
+            subtitle: 'Your personal guide for a perfect stay',
+            primaryColor: '#FF5A5F',
+            element: '#chat-container', // Render inside the container
+            showLauncher: false, // Hide the launcher button
+            initialState: 'open', // Ensure chat is open by default
+            mode: 'embedded' // Embed the chat fully in the container
         });
-        
-        // Function to add a message to the chat
-        function addMessage(message, isUser = false) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
-            messageElement.textContent = message;
-            messagesContainer.appendChild(messageElement);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        // Function to show loading indicator
-        function showLoading() {
-            const loadingElement = document.createElement('div');
-            loadingElement.classList.add('message', 'bot-message', 'loading');
-            loadingElement.id = 'loading-indicator';
-            messagesContainer.appendChild(loadingElement);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        // Function to remove loading indicator
-        function hideLoading() {
-            const loadingElement = document.getElementById('loading-indicator');
-            if (loadingElement) {
-                loadingElement.remove();
-            }
-        }
-        
-        // Function to send message to the API
-        async function sendMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
-            
-            // Add user message to chat
-            addMessage(message, true);
-            chatInput.value = '';
-            
-            // Show loading indicator
-            showLoading();
-            
-            try {
-                // Replace this with your actual API call
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ chatInput: message })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                const data = await response.json();
-                hideLoading();
-                
-                // Add bot response to chat
-                // Assuming the response has a 'reply' field with the bot's message
-                addMessage(data.reply || "Sorry, I couldn't process your request.");
-                
-            } catch (error) {
-                console.error('Error:', error);
-                hideLoading();
-                addMessage("Sorry, I'm having trouble connecting right now. Please try again later.");
-            }
-        }
     </script>
 </body>
 </html>
