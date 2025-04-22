@@ -10,33 +10,52 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Arial', sans-serif;
+            width: 100%;
+            overflow: hidden; /* Prevent scrollbars */
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f9f9f9, #e0e0e0); /* Subtle gradient like chatbot.com */
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f9f9f9;
         }
 
         #chat-container {
             width: 100%;
-            max-width: 600px; /* Wider for a chatbot feel */
-            height: 90vh; /* Almost full height */
-            border: none; /* Remove border for cleaner look */
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* Softer shadow */
-            border-radius: 12px; /* Rounded corners */
-            overflow: hidden; /* Prevent content overflow */
-            background-color: #ffffff; /* White background for chat */
+            height: 100vh; /* Full viewport height */
+            max-width: 800px; /* Slightly wider for desktop */
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow */
+            border-radius: 16px; /* Softer corners */
+            overflow: hidden;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Ensure the chat takes full space */
-        .n8n-chat-window {
-            height: 100% !important;
+        /* Override n8n-chat styles */
+        .n8n-chat-window, .n8n-chat-container {
             width: 100% !important;
+            height: 100% !important;
+            border-radius: 16px;
         }
 
-        /* Hide the launcher button if it exists */
-        .n8n-chat-launcher {
+        /* Hide launcher button */
+        .n8n-chat-launcher, .chat-launcher, [class*='launcher'] {
             display: none !important;
+        }
+
+        /* Ensure chat content fills the container */
+        .n8n-chat-content, [class*='chat-content'] {
+            flex-grow: 1;
+            height: 100% !important;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            #chat-container {
+                max-width: 100%;
+                border-radius: 0; /* No rounded corners on mobile */
+            }
         }
     </style>
 </head>
@@ -49,13 +68,25 @@
         createChat({
             webhookUrl: 'https://automation.guitarjkp.me/webhook/33256a88-dc76-4f8a-bfb8-a117fe433f8a/chat',
             title: 'Airbnb Stay Assistant',
-            subtitle: 'Your personal guide for a perfect stay',
+            subtitle: 'Your AI-powered guide for a perfect stay',
             primaryColor: '#FF5A5F',
-            element: '#chat-container', // Render inside the container
-            showLauncher: false, // Hide the launcher button
-            initialState: 'open', // Ensure chat is open by default
-            mode: 'embedded' // Embed the chat fully in the container
+            element: '#chat-container',
+            showLauncher: false, // Hide launcher button
+            initialState: 'open', // Open chat by default
+            mode: 'embedded', // Embed fully in container
+            autoOpen: true, // Fallback if initialState fails
+            disableToggle: true // Prevent closing the chat
         });
-    </script>
-</body>
-</html>
+
+        // Fallback to force chat open if library doesn't respect initialState
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const chatWindow = document.querySelector('.n8n-chat-window') || document.querySelector('[class*="chat-window"]');
+                if (chatWindow) {
+                    chatWindow.style.display = 'block';
+                }
+                const launcher = document.querySelector('.n8n-chat-launcher') || document.querySelector('[class*="launcher"]');
+                if (launcher) {
+                    launcher.style.display = 'none';
+                }
+            }, 500); // Delay
